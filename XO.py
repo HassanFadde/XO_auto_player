@@ -103,8 +103,6 @@ def menu():
 def click(event):
     global height,width,nombre_tours,table,taille,nombre_players,is_over,can_click
     if not can_click and nombre_players==1:
-        canvas.destroy()
-        menu()
         return
     taille=height//3
     x,y=(event.x-(event.x%taille)),(event.y-(event.y%taille))
