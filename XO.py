@@ -176,9 +176,7 @@ def game_over(table,x,y):
                       empty_case.append(to_add)
           if len(strategie[table[y][x]])==3 and not strategie[table[y][x]] in strategies[table[y][x]] and len(empty_case)==3:
               strategies[table[y][x]].append(strategie[table[y][x]])
-              print(strategies_robot)
               strategies_robot[table[y][x]].append((tpl_int(strategie[table[y][x]]),tpl_int(strategie[{"X":"O","O":"X"}[table[y][x]]])))
-              print(strategies_robot)
               file_strategies=open("strategies.txt","r+")
               if len_lines!=0:
                 file_strategies.seek(len_lines+n_l)
@@ -206,6 +204,31 @@ def reading_line(line:list)->dict:
         cases[""]=cases[""][0]
     return cases
 #--------------------------------------------  
+def is_accepted(local_strategie:list,signe:str)->bool:
+    global table,strategie
+    resoult1,resoult2=True,True
+    for index in range(len(strategie[signe])):
+        if strategie[signe][index]!=local_strategie[0][index]:
+            return False
+    anti_signe={"X":"O","O":"X"}[signe]
+    for index in range(len(strategie[anti_signe])):
+        if strategie[anti_signe][index]!=local_strategie[1][index]:
+            resoult1=False
+            break
+    empty_case=[]
+    for x_1 in range(3):
+        for x_2 in range(x_1+1,3):
+            pseudo_table=[[""]*3 for _ in range(3)]
+            pseudo_table[int(strategie[table[y][x]][x_1][1])][int(strategie[table[y][x]][x_1][3])]=table[y][x]
+            pseudo_table[int(strategie[table[y][x]][x_2][1])][int(strategie[table[y][x]][x_2][3])]=table[y][x]
+            to_add=virtual_player(pseudo_table,True)
+            if to_add!="(-1,-1)":
+                empty_case.append((int(to_add[1]),int(to_add[3])))
+    for case in empty_case:
+        if table[case[0]][case[1]]:
+            resoult2=False
+    if resoult1 or resoult2:
+        return True
 def virtual_player(table,return_case=False):
     global is_robot_first_player,can_click,strategie
     if not return_case and is_robot_first_player:
