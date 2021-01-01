@@ -175,8 +175,10 @@ def game_over(table,x,y):
                   if to_add!="(-1,-1)":
                       empty_case.append(to_add)
           if len(strategie[table[y][x]])==3 and not strategie[table[y][x]] in strategies[table[y][x]] and len(empty_case)==3:
-              new_strategie=strategie[table[y][x]]
-              strategies[table[y][x]].append(new_strategie)
+              strategies[table[y][x]].append(strategie[table[y][x]])
+              print(strategies_robot)
+              strategies_robot[table[y][x]].append((tpl_int(strategie[table[y][x]]),tpl_int(strategie[{"X":"O","O":"X"}[table[y][x]]])))
+              print(strategies_robot)
               file_strategies=open("strategies.txt","r+")
               if len_lines!=0:
                 file_strategies.seek(len_lines+n_l)
