@@ -2,7 +2,10 @@ from tkinter import *
 import time
 import numpy as np
 can_click=True
-file_strategies=open("strategies.txt","r+")
+try:
+    file_strategies=open("strategies.txt","r+")
+except:
+    file_strategies=open("strategies.txt","w")
 lines=file_strategies.readlines()
 len_lines=0
 n_l=-1
@@ -29,6 +32,7 @@ for line in lines:
     else:
         strategies_robot[x_o].append((list_strategie,[(int(empty_case_line[1]),int(empty_case_line[3])),(int(empty_case_line[7]),int(empty_case_line[9]))]))
     strategies[x_o].append(list_line)
+file_strategies.close()
 def the_one_player():
     global stat_win,canvas_start,frame_buttons
     stat_win=["PILE","FACE"][round(np.random.normal()*10**10)%2]
