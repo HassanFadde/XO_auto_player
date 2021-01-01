@@ -204,13 +204,12 @@ def reading_line(line:list)->dict:
         cases[""]=cases[""][0]
     return cases
 #--------------------------------------------  
-def is_accepted(local_strategie:list,signe:str)->bool:
+def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
     global table,strategie
     resoult1,resoult2=True,True
     for index in range(len(strategie[signe])):
         if strategie[signe][index]!=local_strategie[0][index]:
             return False
-    anti_signe={"X":"O","O":"X"}[signe]
     for index in range(len(strategie[anti_signe])):
         if strategie[anti_signe][index]!=local_strategie[1][index]:
             resoult1=False
@@ -229,6 +228,19 @@ def is_accepted(local_strategie:list,signe:str)->bool:
             resoult2=False
     if resoult1 or resoult2:
         return True
+def best_strategies(signe):
+    global strategies_robot
+    anti_signe={"X":"O","O":"X"}[signe]
+    result,anti_result=[],[]
+    for local_strategie in strategies_robot[signe]:
+        if is_accepted(local_strategie,signe,anti_signe):
+            result.append(local_strategie[0])
+    for local_strategie in strategies_robot[anti_signe]:
+        if is_accepted(local_strategie,anti_signe,signe):
+            anti_result.append(local_strategie)
+    return result,anti_result
+
+    
 def virtual_player(table,return_case=False):
     global is_robot_first_player,can_click,strategie
     if not return_case and is_robot_first_player:
