@@ -222,7 +222,7 @@ def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
         if (int(strategie[signe][index][1]),int(strategie[signe][index][3]))!=local_strategie[0][index]:
             return False
     for index in range(len(strategie[anti_signe])):
-        if strategie[anti_signe][index]!=local_strategie[1][index]:
+        if (int(strategie[anti_signe][index][1]),int(strategie[anti_signe][index][3]))!=local_strategie[1][index]:
             resoult1=False
             break
     empty_case=empty_case_f(local_strategie[0],signe)
@@ -311,7 +311,7 @@ def virtual_player(table,return_case=False):
             if max<=choix[case]:
                 y,x=case
                 max=choix[case]
-        print(choix,strategie_to_do_it,anti_strategie_to_do_it)
+        print(choix)
     while x <0 or y<0 or table[y][x]:
         y,x=round(np.random.normal()*10**10)%3,round(np.random.normal()*10**10)%3
     coche_case(y*taille,x*taille,char,color)
