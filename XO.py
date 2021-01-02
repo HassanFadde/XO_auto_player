@@ -208,6 +208,7 @@ def empty_case_f(strategiee,signe):
     result=[]
     for x_1 in range(3):
         for x_2 in range(x_1+1,3):
+            pseudo_table=[[""]*3 for _ in range(3)]
             pseudo_table[strategiee[x_1][0]][strategiee[x_1][1]]=signe
             pseudo_table[strategiee[x_2][0]][strategiee[x_2][1]]=signe
             to_add=virtual_player(pseudo_table,True)
@@ -218,7 +219,7 @@ def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
     global table,strategie
     resoult1,resoult2=True,True
     for index in range(len(strategie[signe])):
-        if strategie[signe][index]!=local_strategie[0][index]:
+        if (int(strategie[signe][index][1]),int(strategie[signe][index][3]))!=local_strategie[0][index]:
             return False
     for index in range(len(strategie[anti_signe])):
         if strategie[anti_signe][index]!=local_strategie[1][index]:
@@ -234,7 +235,7 @@ def anti_strategie(local_strategie,signe):
     empty_case=empty_case_f(local_strategie[0],signe)
     for case in local_strategie[1]:
         if case in empty_case:
-            empty_case.remove(case)
+            empty_case.remove(case)    
     return empty_case
 def best_strategies(signe):
     global strategies_robot
@@ -247,8 +248,6 @@ def best_strategies(signe):
         if is_accepted(local_strategie,anti_signe,signe):
             anti_result.append(anti_strategie(local_strategie,signe))
     return result,anti_result
-
-    
 def virtual_player(table,return_case=False):
     global is_robot_first_player,can_click,strategie
     if not return_case and is_robot_first_player:
@@ -291,6 +290,28 @@ def virtual_player(table,return_case=False):
     else:
         color="red"
         char="O"
+    if x<0 and y<0 and len(strategie[char])<3:
+        strategie_to_do_it,anti_strategie_to_do_it=best_strategies(char)
+        if is_robot_first_player:
+            check=[strategie_to_do_it,anti_strategie_to_do_it]
+        else:
+            check=[anti_strategie_to_do_it,strategie_to_do_it]
+        choix={}
+        for cases in check[0]:
+            if cases[len(strategie[char])] not in choix:
+                choix[cases[len(strategie[char])]]=0
+            else:
+                choix[cases[len(strategie[char])]]+=1
+        for cases in check[1]:
+            for case in cases:
+                if case in choix:
+                    choix[case]+=1
+        max=0
+        for case in choix:
+            if max<=choix[case]:
+                y,x=case
+                max=choix[case]
+        print(choix,strategie_to_do_it,anti_strategie_to_do_it)
     while x <0 or y<0 or table[y][x]:
         y,x=round(np.random.normal()*10**10)%3,round(np.random.normal()*10**10)%3
     coche_case(y*taille,x*taille,char,color)
