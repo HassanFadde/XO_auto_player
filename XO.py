@@ -204,6 +204,16 @@ def reading_line(line:list)->dict:
         cases[""]=cases[""][0]
     return cases
 #--------------------------------------------  
+def empty_case_f(strategiee,signe):
+    result=[]
+    for x_1 in range(3):
+        for x_2 in range(x_1+1,3):
+            pseudo_table[strategiee[x_1][0]][strategiee[x_1][1]]=signe
+            pseudo_table[strategiee[x_2][0]][strategiee[x_2][1]]=signe
+            to_add=virtual_player(pseudo_table,True)
+            if to_add!="(-1,-1)":
+                result.append((int(to_add[1]),int(to_add[3])))
+    return result
 def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
     global table,strategie
     resoult1,resoult2=True,True
@@ -214,20 +224,18 @@ def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
         if strategie[anti_signe][index]!=local_strategie[1][index]:
             resoult1=False
             break
-    empty_case=[]
-    for x_1 in range(3):
-        for x_2 in range(x_1+1,3):
-            pseudo_table=[[""]*3 for _ in range(3)]
-            pseudo_table[int(strategie[table[y][x]][x_1][1])][int(strategie[table[y][x]][x_1][3])]=table[y][x]
-            pseudo_table[int(strategie[table[y][x]][x_2][1])][int(strategie[table[y][x]][x_2][3])]=table[y][x]
-            to_add=virtual_player(pseudo_table,True)
-            if to_add!="(-1,-1)":
-                empty_case.append((int(to_add[1]),int(to_add[3])))
+    empty_case=empty_case_f(local_strategie[0],signe)
     for case in empty_case:
         if table[case[0]][case[1]]:
             resoult2=False
     if resoult1 or resoult2:
         return True
+def anti_strategie(local_strategie,signe):
+    empty_case=empty_case_f(local_strategie[0],signe)
+    for case in local_strategie[1]:
+        if case in empty_case:
+            empty_case.remove(case)
+    return empty_case
 def best_strategies(signe):
     global strategies_robot
     anti_signe={"X":"O","O":"X"}[signe]
@@ -237,7 +245,7 @@ def best_strategies(signe):
             result.append(local_strategie[0])
     for local_strategie in strategies_robot[anti_signe]:
         if is_accepted(local_strategie,anti_signe,signe):
-            anti_result.append(local_strategie)
+            anti_result.append(anti_strategie(local_strategie,signe))
     return result,anti_result
 
     
