@@ -2,6 +2,11 @@ from tkinter import *
 import time
 import numpy as np
 can_click=True
+def tpl_int(coordonnees):
+    result=[]
+    for coordonnee in coordonnees:
+        result.append((int(coordonnee[1]),int(coordonnee[3])))
+    return result
 try:
     file_strategies=open("strategies.txt","r+")
 except:
@@ -17,7 +22,7 @@ for line in lines:
     list_strategie=[]
     n_l+=1
     len_lines+=len(line)
-    strategie_line,empty_case_line=line.split("|")
+    strategie_line,case_line=line.split("|")
     for char in strategie_line:
         if char in["X","O"]:
             x_o=char
@@ -27,10 +32,10 @@ for line in lines:
             list_strategie.append((int(ints[0]),int(ints[1])))
             list_line.append(f"({ints[0]},{ints[1]})")
             ints=[]
-    if len(empty_case_line)>15:
-        strategies_robot[x_o].append((list_strategie,[(int(empty_case_line[1]),int(empty_case_line[3])),(int(empty_case_line[7]),int(empty_case_line[9])),(int(empty_case_line[13]),int(empty_case_line[15]))]))
+    if len(case_line)>15:
+        strategies_robot[x_o].append((list_strategie,[(int(case_line[1]),int(case_line[3])),(int(case_line[7]),int(case_line[9])),(int(case_line[13]),int(case_line[15]))]))
     else:
-        strategies_robot[x_o].append((list_strategie,[(int(empty_case_line[1]),int(empty_case_line[3])),(int(empty_case_line[7]),int(empty_case_line[9]))]))
+        strategies_robot[x_o].append((list_strategie,[(int(case_line[1]),int(case_line[3])),(int(case_line[7]),int(case_line[9]))]))
     strategies[x_o].append(list_line)
 file_strategies.close()
 def the_one_player():
@@ -157,26 +162,25 @@ def game_over(table,x,y):
           else:
               scores[table[y][x]]+=1
           strategie[table[y][x]].pop()
-          if len(strategie[table[y][x]])==3 and not strategie[table[y][x]] in strategies[table[y][x]]:
-              new_strategie=strategie[table[y][x]]
-              strategies[table[y][x]].append(new_strategie)
-              empty_case=[]
-              for x_1 in range(3):
-                  for x_2 in range(x_1+1,3):
-                      pseudo_table=[[""]*3 for _ in range(3)]
-                      pseudo_table[int(strategie[table[y][x]][x_1][1])][int(strategie[table[y][x]][x_1][3])]=table[y][x]
-                      pseudo_table[int(strategie[table[y][x]][x_2][1])][int(strategie[table[y][x]][x_2][3])]=table[y][x]
-                      to_add=virtual_player(pseudo_table,True)
-                      if to_add!="(-1,-1)":
-                          empty_case.append(to_add)
-              if len(empty_case)==3:
-                 strategies_robot[table[y][x]].append(([(int(new_strategie[0][1]),int(new_strategie[0][3])),(int(new_strategie[1][1]),int(new_strategie[1][3])),(int(new_strategie[2][1]),int(new_strategie[2][3]))],[(int(empty_case[0][1]),int(empty_case[0][3])),(int(empty_case[1][1]),int(empty_case[1][3])),(int(empty_case[2][1]),int(empty_case[2][3]))]))
-              else:
-                  strategies_robot[table[y][x]].append(([(int(new_strategie[0][1]),int(new_strategie[0][3])),(int(new_strategie[1][1]),int(new_strategie[1][3])),(int(new_strategie[2][1]),int(new_strategie[2][3]))],[(int(empty_case[0][1]),int(empty_case[0][3])),(int(empty_case[1][1]),int(empty_case[1][3]))]))
+          strategie[{"X":"O","O":"X"}[table[y][x]]].pop()
+          empty_case=[]
+          for x_1 in range(3):
+              if len(strategie[table[y][x]])!=3:
+                  break
+              for x_2 in range(x_1+1,3):
+                  pseudo_table=[[""]*3 for _ in range(3)]
+                  pseudo_table[int(strategie[table[y][x]][x_1][1])][int(strategie[table[y][x]][x_1][3])]=table[y][x]
+                  pseudo_table[int(strategie[table[y][x]][x_2][1])][int(strategie[table[y][x]][x_2][3])]=table[y][x]
+                  to_add=virtual_player(pseudo_table,True)
+                  if to_add!="(-1,-1)":
+                      empty_case.append(to_add)
+          if len(strategie[table[y][x]])==3 and not strategie[table[y][x]] in strategies[table[y][x]] and len(empty_case)==3:
+              strategies[table[y][x]].append(strategie[table[y][x]])
+              strategies_robot[table[y][x]].append((tpl_int(strategie[table[y][x]]),tpl_int(strategie[{"X":"O","O":"X"}[table[y][x]]])))
               file_strategies=open("strategies.txt","r+")
               if len_lines!=0:
                 file_strategies.seek(len_lines+n_l)
-              to_write=table[y][x]+",".join(strategie[table[y][x]])+f"|{','.join(empty_case)}"+"\n"
+              to_write=table[y][x]+",".join(strategie[table[y][x]])+f"|{','.join(strategie[{'O':'X','X':'O'}[table[y][x]]])}"+"\n"
               len_lines+=len(to_write)
               n_l+=1
               file_strategies.write(to_write)
@@ -199,39 +203,51 @@ def reading_line(line:list)->dict:
     if cases[""]:
         cases[""]=cases[""][0]
     return cases
-def acceptable(local_strategie:list,signe:str)->bool:
-    global strategie ,table,is_robot_first_player
-    if is_robot_first_player and len(local_strategie[1])<3:
-        return False
-    for index in range(len(strategie[signe])%3):
-        if strategie[signe][index]!=local_strategie[0][index] and table[local_strategie[0][index][0]][local_strategie[0][index][1]]!=signe:
-            return False
-    n=0
-    for case in local_strategie[1]:
-        if not table[case[0]][case[1]]:
-            n+=1
-    if n<2:
-        return False
-    return True
-def best_strategies()->list:
-    global table,strategies_robot,strategie,is_robot_first_player
+#--------------------------------------------  
+def empty_case_f(strategiee,signe):
     result=[]
-    anti_result=[]
-    if is_robot_first_player:
-        signe="X"
-        anti_signe="O"
-    else:
-        signe="O"
-        anti_signe="X"
-    
+    for x_1 in range(3):
+        for x_2 in range(x_1+1,3):
+            pseudo_table=[[""]*3 for _ in range(3)]
+            pseudo_table[strategiee[x_1][0]][strategiee[x_1][1]]=signe
+            pseudo_table[strategiee[x_2][0]][strategiee[x_2][1]]=signe
+            to_add=virtual_player(pseudo_table,True)
+            if to_add!="(-1,-1)":
+                result.append((int(to_add[1]),int(to_add[3])))
+    return result
+def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
+    global table,strategie
+    resoult1,resoult2=True,True
+    for index in range(len(strategie[signe])):
+        if (int(strategie[signe][index][1]),int(strategie[signe][index][3]))!=local_strategie[0][index]:
+            return False
+    for index in range(len(strategie[anti_signe])):
+        if (int(strategie[anti_signe][index][1]),int(strategie[anti_signe][index][3]))!=local_strategie[1][index]:
+            resoult1=False
+            break
+    empty_case=empty_case_f(local_strategie[0],signe)
+    for case in empty_case:
+        if table[case[0]][case[1]]:
+            resoult2=False
+    if resoult1 or resoult2:
+        return True
+def anti_strategie(local_strategie,signe):
+    empty_case=empty_case_f(local_strategie[0],signe)
+    for case in local_strategie[1]:
+        if case in empty_case:
+            empty_case.remove(case)    
+    return empty_case
+def best_strategies(signe):
+    global strategies_robot
+    anti_signe={"X":"O","O":"X"}[signe]
+    result,anti_result=[],[]
     for local_strategie in strategies_robot[signe]:
-        if acceptable(local_strategie,signe):
+        if is_accepted(local_strategie,signe,anti_signe):
             result.append(local_strategie[0])
     for local_strategie in strategies_robot[anti_signe]:
-        if acceptable(local_strategie,anti_signe):
-            anti_result.append(local_strategie[1])       
-    return result,anti_result     
-#--------------------------------------------  
+        if is_accepted(local_strategie,anti_signe,signe):
+            anti_result.append(anti_strategie(local_strategie,signe))
+    return result,anti_result
 def virtual_player(table,return_case=False):
     global is_robot_first_player,can_click,strategie
     if not return_case and is_robot_first_player:
@@ -274,29 +290,28 @@ def virtual_player(table,return_case=False):
     else:
         color="red"
         char="O"
-    if x<0 or y<0 and(len(strategie[char])<3):
-        strategies_to_do_it,anti_strategies_to_do_it=best_strategies()
+    if x<0 and y<0 and len(strategie[char])<3:
+        strategie_to_do_it,anti_strategie_to_do_it=best_strategies(char)
+        if is_robot_first_player:
+            check=[strategie_to_do_it,anti_strategie_to_do_it]
+        else:
+            check=[anti_strategie_to_do_it,strategie_to_do_it]
         choix={}
-        if char=="X":
-            check=[strategies_to_do_it,anti_strategies_to_do_it]
-        elif char=="O":
-            check=[anti_strategies_to_do_it,strategies_to_do_it]
         for cases in check[0]:
-            if cases[len(strategie[char])%3] not in choix:
-               choix[cases[len(strategie[char])]]=0
+            if cases[len(strategie[char])] not in choix:
+                choix[cases[len(strategie[char])]]=0
             else:
                 choix[cases[len(strategie[char])]]+=1
         for cases in check[1]:
             for case in cases:
                 if case in choix:
-                  choix[case]+=1
+                    choix[case]+=1
         max=0
         for case in choix:
             if max<=choix[case]:
                 y,x=case
                 max=choix[case]
-        print(choix)    
-
+        print(choix)
     while x <0 or y<0 or table[y][x]:
         y,x=round(np.random.normal()*10**10)%3,round(np.random.normal()*10**10)%3
     coche_case(y*taille,x*taille,char,color)
