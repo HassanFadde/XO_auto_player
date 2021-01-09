@@ -2,6 +2,7 @@ from tkinter import *
 import time
 import numpy as np
 can_click=True
+n_c=0
 def tpl_int(coordonnees):
     result=[]
     for coordonnee in coordonnees:
@@ -106,8 +107,13 @@ def menu():
     button_one_player.pack(pady=3,padx=3)
     button_two_players.pack(pady=3,padx=3)
 def click(event):
-    global height,width,nombre_tours,table,taille,nombre_players,is_over,can_click
+    global height,width,nombre_tours,table,taille,nombre_players,is_over,can_click,nc
     if not can_click and nombre_players==1:
+        if nc==6:
+            canvas.destroy()
+            menu()
+            nc=0
+        nc+=1
         return
     taille=height//3
     x,y=(event.x-(event.x%taille)),(event.y-(event.y%taille))
@@ -120,6 +126,7 @@ def click(event):
     if table[y//taille][x//taille]:
         return
     coche_case(y,x,char,color)
+    nc=0
     can_click=False
     if nombre_players==1 and not is_over:
         time.sleep(0.5)     
@@ -215,7 +222,7 @@ def empty_case_f(strategiee,signe):
             if to_add!="(-1,-1)":
                 result.append((int(to_add[1]),int(to_add[3])))
     return result
-def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
+def is_accepted(local_strategie:list,signe:str,anti_signe:str,anti:bool=False)->bool:
     global table,strategie
     resoult1,resoult2=True,True
     for index in range(len(strategie[signe])):
@@ -229,13 +236,16 @@ def is_accepted(local_strategie:list,signe:str,anti_signe:str)->bool:
     for case in empty_case:
         if table[case[0]][case[1]]:
             resoult2=False
-    if resoult1 or resoult2:
+    if resoult1 or (resoult2 and anti):
         return True
+    return False 
 def anti_strategie(local_strategie,signe):
     empty_case=empty_case_f(local_strategie[0],signe)
+    print(empty_case)
     for case in local_strategie[1]:
         if case in empty_case:
-            empty_case.remove(case)    
+            empty_case.remove(case) 
+    print(empty_case)
     return empty_case
 def best_strategies(signe):
     global strategies_robot
@@ -245,7 +255,7 @@ def best_strategies(signe):
         if is_accepted(local_strategie,signe,anti_signe):
             result.append(local_strategie[0])
     for local_strategie in strategies_robot[anti_signe]:
-        if is_accepted(local_strategie,anti_signe,signe):
+        if is_accepted(local_strategie,anti_signe,signe,True):
             anti_result.append(anti_strategie(local_strategie,signe))
     return result,anti_result
 def virtual_player(table,return_case=False):
