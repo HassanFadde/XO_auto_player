@@ -181,11 +181,13 @@ def game_over(table,x,y):
                   to_add=virtual_player(pseudo_table,True)
                   if to_add!="(-1,-1)":
                       empty_case.append(to_add)
+          delete_from_it=False
           for to_delete in strategie[{"X":"O","O":"X"}[table[y][x]]]:
               if to_delete not in empty_case:
                   continue
+              delete_from_it=True
               empty_case.remove(to_delete)
-          if len(strategie[table[y][x]])==3 and not strategie[table[y][x]] in strategies[table[y][x]] and len(empty_case)>=2:
+          if len(strategie[table[y][x]])==3 and not strategie[table[y][x]] in strategies[table[y][x]] and ((len(empty_case)==2 and delete_from_it) or len(empty_case)==3):
               strategies[table[y][x]].append(strategie[table[y][x]])
               strategies_robot[table[y][x]].append((tpl_int(strategie[table[y][x]]),tpl_int(strategie[{"X":"O","O":"X"}[table[y][x]]])))
               file_strategies=open("strategies.txt","r+")
@@ -251,6 +253,7 @@ def anti_strategie(local_strategie,signe):
     if (1,1) in local_strategie[0] and (1,1) not in empty_case:
         empty_case.reverse()
         empty_case.append((1,1))
+        print(local_strategie)
         empty_case.reverse()
     return empty_case
 def best_strategies(signe):
