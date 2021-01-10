@@ -11,7 +11,7 @@ def tpl_int(coordonnees):
 try:
     file_strategies=open("strategies.txt","r+")
 except:
-    file_strategies=open("strategies.txt","w")
+    file_strategies=open("strategies.txt","w+")
 lines=file_strategies.readlines()
 len_lines=0
 n_l=-1
