@@ -11,7 +11,10 @@ def tpl_int(coordonnees):
 try:
     file_strategies=open("strategies.txt","r+")
 except:
-    file_strategies=open("strategies.txt","w+")
+    file_strategies=open("strategies.txt","w")
+    file_strategies.write("X(0,2),(1,2),(1,1)|(0,0),(2,2)\nX(0,0),(0,2),(2,2)|(1,0),(0,1)\nX(2,2),(0,0),(0,2)|(1,1),(2,0)\nX(0,0),(2,2),(2,0)|(1,1),(0,2)\nX(0,0),(0,2),(1,1)|(1,0),(0,1)\nX(2,0),(0,0),(0,2)|(2,1),(1,0)\nX(0,0),(2,0),(1,1)|(0,1),(1,0)\nX(2,2),(2,0),(0,0)|(1,2),(2,1)\nX(2,0),(0,2),(0,0)|(1,1),(2,2)\nO(2,1),(2,0),(1,1)|(0,0),(1,0),(2,2)\nX(0,2),(2,0),(0,0)|(1,1),(2,2)\nX(0,2),(2,2),(2,0)|(0,1),(1,2)\nX(2,0),(2,2),(0,2)|(1,0),(2,1)\nX(0,0),(1,0),(1,1)|(0,2),(2,0)\nO(1,1),(2,2),(2,0)|(0,0),(1,2),(1,0)\nX(1,1),(1,2),(2,2)|(0,1),(1,0)\nX(1,1),(2,1),(2,0)|(1,2),(0,1)\nX(1,1),(1,0),(2,0)|(0,1),(1,2)\nX(0,1),(0,2),(1,1)|(0,0),(2,2)\nX(1,1),(0,2),(0,1)|(1,2),(2,0)\nX(1,1),(0,1),(0,2)|(1,0),(2,1)\nX(1,1),(0,2),(0,0)|(2,0),(1,0)\nX(1,1),(0,0),(0,1)|(1,0),(2,2)\nX(1,1),(2,2),(0,2)|(0,0),(0,1)\nX(1,1),(0,2),(1,2)|(0,1),(2,0)\nX(1,1),(2,2),(2,0)|(0,0),(1,0)\nX(1,1),(0,0),(0,2)|(2,2),(1,0)\nX(1,1),(2,0),(0,0)|(2,1),(0,2)\nX(1,1),(0,0),(2,0)|(2,2),(2,1)\nX(1,1),(2,0),(1,0)|(2,1),(0,2)\nX(1,1),(0,2),(2,2)|(2,0),(2,1)\nX(1,1),(2,0),(2,2)|(0,2),(1,2)\nX(1,1),(2,0),(2,1)|(1,0),(0,2)\nX(1,1),(2,1),(2,2)|(1,0),(0,1)\nX(1,1),(2,2),(2,1)|(0,0),(1,2)\nX(1,1),(0,0),(1,0)|(0,1),(2,2)\n")
+    file_strategies.close()
+    file_strategies=open("strategies.txt","r+")
 lines=file_strategies.readlines()
 len_lines=0
 n_l=-1
@@ -246,14 +249,14 @@ def is_accepted(local_strategie:list,signe:str,anti_signe:str,anti:bool=False)->
         return True
     return False 
 def anti_strategie(local_strategie,signe):
+    global table
     empty_case=empty_case_f(local_strategie[0],signe)
     for case in local_strategie[1]:
         if case in empty_case:
             empty_case.remove(case) 
-    if (1,1) in local_strategie[0] and (1,1) not in empty_case:
+    if (1,1) in local_strategie[0] and (1,1) not in empty_case and table[1][1]=="" :
         empty_case.reverse()
         empty_case.append((1,1))
-        print(local_strategie)
         empty_case.reverse()
     return empty_case
 def best_strategies(signe):
@@ -326,10 +329,16 @@ def virtual_player(table,return_case=False):
                 if case in choix:
                     choix[case]+=1
         max=0
+        posse=[]
         for case in choix:
-            if max<=choix[case]:
-                y,x=case
+            if max<choix[case]:
+                posse=[case]
                 max=choix[case]
+            elif max==choix[case]:
+                posse.append(case)
+        if len(posse)>0:
+            y,x=posse[int(np.random.normal()*10**10)%len(posse)]
+                
         print(choix)
     while x <0 or y<0 or table[y][x]:
         y,x=round(np.random.normal()*10**10)%3,round(np.random.normal()*10**10)%3
